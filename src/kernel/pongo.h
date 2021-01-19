@@ -42,12 +42,14 @@
 #include "timer/timer.h"
 #include "xnu/xnu.h"
 #include "tz/tz.h"
+#include "libDER/libDER_config.h"
 #include "libDER/DER_Encode.h"
 #include "libDER/DER_Decode.h"
 #include "libDER/asn1Types.h"
 #include "libDER/oids.h"
 #include "mipi/mipi.h"
 #include "aes/aes.h"
+#include "sep/sep.h"
 #endif
 
 #define DT_KEY_LEN 0x20

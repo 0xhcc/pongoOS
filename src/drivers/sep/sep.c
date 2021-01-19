@@ -1,6 +1,6 @@
-/* 
+/*
  * pongoOS - https://checkra.in
- * 
+ *
  * Copyright (C) 2019-2020 checkra1n team
  *
  * This file is part of pongoOS.
@@ -11,10 +11,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,9 +22,10 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  */
 #include <pongo.h>
+#include <img4/img4.h>
 
 #define TZ_REGS ((volatile uint32_t*)0x200000480)
 
@@ -131,7 +132,7 @@ static inline uint64_t mailbox_read() {
 #endif
     return rd;
 }
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) static inline void mailbox_write_fast(uint64_t value) {
+static inline void mailbox_write_fast(uint64_t value) {
     if (is_sep64) {
         mailboxregs64->snd0 = value;
         mailboxregs64->snd1 = 0;
@@ -140,7 +141,7 @@ __attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __
         mailboxregs32->snd1 = (value >> 32ULL) & 0xffffffff;
     }
 }
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) static inline uint64_t mailbox_read_fast() {
+static inline uint64_t mailbox_read_fast() {
     uint64_t rd;
 
     if (is_sep64) {
@@ -153,7 +154,7 @@ __attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __
     return rd;
 }
 extern void sep_racer(void* observe_b0, void* observe_bs, void* null_b0, void* null_bs, void* replay, uint64_t size, void* shct, void* shv);
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) void  do_sep_racer(void* observe_b0, void* observe_bs, void* null_b0, void* null_bs, void* replay, uint64_t size, void* shct, void* shv, uint64_t msg) {
+void  do_sep_racer(void* observe_b0, void* observe_bs, void* null_b0, void* null_bs, void* replay, uint64_t size, void* shct, void* shv, uint64_t msg) {
     disable_interrupts();
     mailbox_write_fast(msg);
     sep_racer(observe_b0, observe_bs, null_b0, null_bs, replay, size, shct, shv);
@@ -173,7 +174,7 @@ void seprom_execute_opcode(uint8_t operation, uint8_t param, uint32_t data) {
     sep_send_msg(255, 0x0, operation, param, data);
 }
 
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) void sep_handle_msg_from_seprom(union sep_message_u msg) {
+void sep_handle_msg_from_seprom(union sep_message_u msg) {
     if (msg.msg.opcode == 255) {
         fiprintf(stderr, "SEPROM panic!\n");
         sep_has_panicked = true;
@@ -205,7 +206,7 @@ uint8_t SEP_PANIC[400] = {0};
 uint64_t * SEP_PANIC_PTR = (uint64_t*)&SEP_PANIC;
 uint32_t SEP_PANIC_CNT = 0;
 
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) void sep_handle_msg_from_sep(union sep_message_u msg) {
+void sep_handle_msg_from_sep(union sep_message_u msg) {
     if (msg.msg.ep == 0xff) {
         // SEPROM
         sep_handle_msg_from_seprom(msg);
@@ -232,7 +233,7 @@ __attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __
 
     // [tbd]
 }
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) void sep_check_mailbox() {
+void sep_check_mailbox() {
     uint32_t sts = (is_sep64) ? mailboxregs64->recv_sts : mailboxregs32->recv_sts;
     if ((sts & 0x20000) == 0) {
         union sep_message_u msg;
@@ -241,7 +242,7 @@ __attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __
         event_fire(&sep_msg_event);
     }
 }
-__attribute((__annotate__(("nofla")))) __attribute((__annotate__(("nobcf")))) __attribute((__annotate__(("nosub"))))  __attribute((__annotate__(("nocff"))))  __attribute((__annotate__(("nosplit")))) __attribute((__annotate__(("nostrcry")))) uint64_t sep_fast_check_mailbox() {
+uint64_t sep_fast_check_mailbox() {
     uint32_t sts = (is_sep64) ? mailboxregs64->recv_sts : mailboxregs32->recv_sts;
     if ((sts & 0x20000) == 0) {
         return mailbox_read_fast();
@@ -412,7 +413,7 @@ static void aes_cbc(void *key, void *iv, void *data, size_t size)
 
 void copy_block(void* to, void* from);
 void sep_aes_kbag(uint32_t* kbag_bytes_32, uint32_t * kbag_out, char mode);
-void reload_sepi(TheImg4 *img4) {
+void reload_sepi(Img4 *img4) {
     DERItem key;
 
     uint8_t kbag[0x30];
@@ -541,7 +542,7 @@ no_kbag:
 
 void seprom_fwload_race() {
     uint32_t volatile* shmshc = (uint32_t*)0x210E00000;
-    
+
     if (shmshc[0] == 0xea000002) {
         *remote_addr = 0;
         *remote_sts = 1;
@@ -564,9 +565,14 @@ void seprom_fwload_race() {
     uint32_t imglen = (uint32_t)(ptr[1]);
     DERByte* data = (DERByte*) phystokv(*ptr);
 
-    TheImg4 img4 = {0};
+    Img4 img4 = {0};
     unsigned int type = 0;
-    int rv = Img4DecodeInit(data, imglen, &img4);
+    DERItem tmp = { .data = data, .length = imglen };
+    DERDecodedInfo decoded;
+    int rv = DERDecodeItem(&tmp, &decoded);
+    if (0 != rv) goto badimage;
+    imglen = decoded.content.length + (decoded.content.data - data);
+    rv = Img4DecodeInit(data, imglen, &img4);
     if (0 != rv) goto badimage;
     rv = Img4DecodeGetPayloadType(&img4, &type);
     if (0 != rv) goto badimage;
@@ -585,14 +591,15 @@ void seprom_fwload_race() {
 
     uint32_t bytesToInsert[0x30/4] = {0};
     memset(bytesToInsert, 0x41, 0x30);
-    makeRestoreInfo(&items[3], (void*)bytesToInsert, 0x30);
+    rv = Img4EncodeRestoreInfo(&items[3], (void*)bytesToInsert, 0x30);
+    if (rv != 0 || items[3].length == 0) panic("couldn't create IM4R");
 
     DERItem out;
     out.length = 0;
-    Img4Encode(&out, items, 4);
+    rv = Img4Encode(&out, items);
     free(items[3].data);
 
-    if (out.length == 0) panic("couldn't reassemble img4");
+    if (rv != 0 || out.length == 0) panic("couldn't reassemble img4");
 #ifdef SEP_DEBUG
     fiprintf(stderr, "image len %x -> %x\n", imglen, out.length);
 #endif
